@@ -1,0 +1,283 @@
+/* Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: #FAFAFA;
+    color: #333;
+}
+
+/* Navigation */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 50px;
+    background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    
+    /* --- NEW CODE TO FREEZE THE MENU --- */
+    position: sticky;
+    top: 0;
+    z-index: 1000; /* Ensures the menu always stays on top of your photos! */
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: 600;
+    color: #D81B60; /* Deep Pink */
+}
+
+nav a {
+    text-decoration: none;
+    color: #333;
+    margin-left: 30px;
+    font-weight: 400;
+    transition: color 0.3s ease;
+}
+
+nav a:hover {
+    color: #D81B60;
+}
+
+/* Buttons */
+.btn-main {
+    background-color: #D81B60;
+    color: white;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-outline {
+    border: 2px solid #D81B60;
+    color: #D81B60;
+    padding: 8px 20px;
+    border-radius: 25px;
+}
+
+/* --- Hero Carousel Section --- */
+.hero {
+    position: relative;
+    height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Forces the content to the absolute center */
+    overflow: hidden; /* Keeps the images contained */
+}
+
+/* Container for the sliding images */
+.slideshow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1; /* Puts the images behind the text/button */
+}
+
+/* Individual slides */
+.slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover !important; /* Stretches image edge-to-edge, kills grey bars */
+    background-position: center 20%; /* Shifts camera up so heads aren't cut off */
+    background-repeat: no-repeat; 
+    opacity: 0; 
+    animation: fadeSlide 15s infinite; 
+}
+
+/* Add a dark overlay so the button pops */
+.slide::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.2); /* Lightened to 20% so the photos shine */
+}
+
+/* Timing for each slide */
+.slide:nth-child(1) { animation-delay: 0s; }
+.slide:nth-child(2) { animation-delay: 5s; }
+.slide:nth-child(3) { animation-delay: 10s; }
+
+/* The Keyframes that make it fade in and out */
+@keyframes fadeSlide {
+    0%   { opacity: 0; }
+    10%  { opacity: 1; }
+    33%  { opacity: 1; }
+    43%  { opacity: 0; }
+    100% { opacity: 0; }
+}
+
+/* Centers the button wrapper on the screen */
+.hero-content {
+    position: relative;
+    z-index: 2; 
+    text-align: center;
+}
+
+/* Make the hero button bigger so it pops! */
+.hero-content .btn-main {
+    font-size: 1.3rem;
+    padding: 15px 40px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+/* --- Products Section with Background Image --- */
+.products {
+    position: relative;
+    padding: 100px 10%;
+    text-align: center;
+    background-image: url('product-photo.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed; /* Creates that cool parallax scrolling effect */
+}
+
+/* Dark overlay so the white product cards pop */
+.products::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.65); /* 65% black tint */
+    z-index: 1;
+}
+
+/* Keep the title and cards above the overlay */
+.products h2, 
+.product-grid {
+    position: relative;
+    z-index: 2;
+}
+
+.products h2 {
+    color: white; /* Changes the "Our Products" title to white so it stands out */
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.product-grid {
+    display: flex;
+    justify-content: center;
+    gap: 30px; 
+    flex-wrap: wrap; 
+    margin-top: 40px;
+}
+
+/* --- Re-added Product Card Styles --- */
+.product-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    width: 300px;
+}
+
+.product-card img {
+    width: 100%;
+    border-radius: 8px;
+}
+
+.product-card h3 {
+    margin: 15px 0 10px;
+}
+
+.product-card .price {
+    color: #D81B60;
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+}
+
+/* Footer */
+footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 30px;
+}
+
+/* --- About Us Section (Full Background) --- */
+.about-section {
+    position: relative;
+    padding: 100px 10%;
+    background-image: url('factory-photo.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed; 
+}
+
+/* Dark overlay covering the photo */
+.about-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4); 
+    z-index: 1;
+}
+
+/* Keeps the text container above the dark overlay */
+.about-container {
+    position: relative;
+    z-index: 2; 
+    display: flex;
+    justify-content: flex-start; 
+}
+
+/* The White Text Box */
+.about-text-box {
+    background-color: rgba(255, 255, 255, 0.95); 
+    padding: 50px;
+    border-radius: 15px;
+    max-width: 600px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+}
+
+.about-text-box h2 {
+    font-size: 2.5rem;
+    color: #880E4F;
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+.about-text-box p {
+    font-size: 1.1rem;
+    color: #444;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.about-text-box .btn-main {
+    display: inline-block;
+    margin-top: 10px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .about-section {
+        background-attachment: scroll; 
+        padding: 60px 5%;
+    }
+    .about-text-box {
+        padding: 30px;
+    }
+}

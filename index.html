@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rowena Pink Petals | Premium Tissue Paper</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header>
+        <div class="logo">🌸 Pink Petals</div>
+        <nav>
+            <a href="#home">Home</a>
+            <a href="#shop">Shop</a>
+            <a href="#about">About Us</a>
+            <a href="#wholesale" class="btn-outline">Wholesale</a>
+        </nav>
+    </header>
+
+    <section id="home" class="hero">
+        <div class="slideshow">
+            <div class="slide" style="background-image: url('family-photo.png'); background-position: center 15%;"></div>
+            
+            <div class="slide" style="background-image: url('team-member.png'); background-size: cover; background-position: center;"></div>
+            
+            <div class="slide" style="background-image: url('team-photo.jpg'); background-position: center 15%;"></div>
+        </div>
+        
+        <div class="hero-content">
+            <a href="#shop" class="btn-main">Shop Now</a>
+        </div>
+    </section>
+
+    <section id="shop" class="products">
+        <h2>Our Products</h2>
+        <div class="product-grid">
+            
+            <div class="product-card">
+                <img src="product-4.png" alt="Pink Petals 4 Rolls">
+                <h3>Pink Petals 2-Ply (4 Rolls)</h3>
+                <p class="price">$1.50</p>
+                <p style="font-size: 0.9rem; color: gray; margin-bottom: 10px;">Coming Soon</p>
+                <button class="btn-main">Add to Cart</button>
+            </div>
+
+            <div class="product-card">
+                <img src="product-9.jpg" alt="Pink Petals 9 Rolls">
+                <h3>Pink Petals 2-Ply (9 Rolls)</h3>
+                <p class="price">$3.00</p>
+                <p style="font-size: 0.9rem; color: gray; margin-bottom: 10px;" id="live-stock">Checking stock...</p>
+                <button class="btn-main">Add to Cart</button>
+            </div>
+
+            <div class="product-card">
+                <img src="product-18.png" alt="Pink Petals 18 Rolls">
+                <h3>Pink Petals 2-Ply (18 Rolls)</h3>
+                <p class="price">$6.00</p>
+                <p style="font-size: 0.9rem; color: gray; margin-bottom: 10px;">Coming Soon</p>
+                <button class="btn-main">Add to Cart</button>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="about" class="about-section">
+        <div class="about-overlay"></div>
+        
+        <div class="about-container">
+            <div class="about-text-box">
+                <h2>Proudly Zimbabwean.<br>Trusted by Generations.</h2>
+                <p>At Rowena Pink Petals, we believe that everyday essentials should be crafted with care. Located in the heart of the Marondera Industrial Area, our manufacturing facility is dedicated to producing high-quality, premium 2-ply tissue paper for families and businesses across the nation.</p>
+                <p>By keeping our production local, we ensure strict quality control while creating jobs and supporting the local economy. Soft, strong, and simply better—that is the Pink Petals promise.</p>
+                <a href="#shop" class="btn-main">View Our Products</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>📍 337 Longlands Road, Marondera Industrial Area, Zimbabwe</p>
+        <p>&copy; 2026 Rowena Pink Petals. All rights reserved.</p>
+    </footer>
+
+    <script type="module">
+        // 1. Import the Firebase tools from the internet
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // 2. Your Specific Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSy" + "CyM_luoUqilYNG-GPn7Gxb_Eo5ewVWB5Q",
+            authDomain: "rowena-pink-petals.firebaseapp.com",
+            projectId: "rowena-pink-petals",
+            storageBucket: "rowena-pink-petals.firebasestorage.app",
+            messagingSenderId: "925796017219",
+            appId: "1:925796017219:web:81f4a61692bc75c8ece0f6"
+        };
+
+        // 3. Initialize Firebase on the website
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 4. The function to fetch the live inventory
+        async function loadLiveInventory() {
+            try {
+                // Point exactly to the 9-pack we created with your Python script
+                const productRef = doc(db, "finished_goods", "FG-9PACK-001");
+                const productSnap = await getDoc(productRef);
+
+                if (productSnap.exists()) {
+                    const data = productSnap.data();
+                    
+                    // Inject the database values straight into the HTML!
+                    document.getElementById("live-price").innerText = "$" + data.retail_price_usd.toFixed(2);
+                    document.getElementById("live-stock").innerText = data.current_stock_units + " packs in stock";
+                } else {
+                    console.log("No product found!");
+                    document.getElementById("live-stock").innerText = "Out of stock";
+                }
+            } catch (error) {
+                console.error("Error connecting to warehouse:", error);
+            }
+        }
+
+        // Run the function as soon as the page loads
+        loadLiveInventory();
+    </script>
+
+</body>
+</html>
