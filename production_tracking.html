@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rowena Pink Petals | Production Tracking</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; }
+        body { display: flex; height: 100vh; background-color: #F4F6F8; }
+        
+        /* Sidebar Styles */
+        .sidebar { width: 250px; background-color: #1E293B; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { padding: 20px; background-color: #0F172A; text-align: center; border-bottom: 2px solid #D81B60; }
+        .sidebar-header h2 { font-size: 1.2rem; color: #D81B60; }
+        .sidebar-header p { font-size: 0.8rem; color: #94A3B8; }
+        .nav-links { list-style: none; padding: 20px 0; flex-grow: 1; }
+        .nav-links li { padding: 15px 25px; cursor: pointer; transition: 0.3s; color: #CBD5E1; }
+        .nav-links li:hover, .nav-links li.active { background-color: #334155; color: white; border-left: 4px solid #D81B60; }
+        .logout-btn { background-color: #D81B60; color: white; border: none; padding: 15px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .logout-btn:hover { background-color: #AD1457; }
+
+        /* Main Content Styles */
+        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 10px; border-bottom: 1px solid #E2E8F0; }
+        
+        /* Grid Layout */
+        .tracking-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; align-items: start; }
+        
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid #D81B60; }
+        .card h3 { color: #334155; margin-bottom: 20px; }
+        
+        /* Form Elements */
+        label { display: block; margin-bottom: 8px; color: #64748B; font-weight: bold; font-size: 0.9rem; }
+        select, input, textarea { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 1rem; }
+        select:focus, input:focus, textarea:focus { outline: none; border-color: #D81B60; }
+        textarea { resize: vertical; min-height: 80px; }
+        
+        .submit-btn { width: 100%; padding: 15px; background-color: #F59E0B; color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .submit-btn:hover { background-color: #D97706; }
+        #status-msg { margin-top: 15px; font-weight: bold; text-align: center; font-size: 0.9rem; }
+
+        /* Table Styles */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #E2E8F0; }
+        th { background-color: #F8FAFC; color: #475569; font-weight: bold; font-size: 0.9rem; letter-spacing: 0.5px; }
+        td { color: #334155; font-size: 0.95rem; }
+        tr:hover td { background-color: #F1F5F9; }
+        .badge { background-color: #D1FAE5; color: #059669; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>RPP MIS</h2>
+            <p>Godview Active</p>
+        </div>
+        <!-- FIX: Updated sidebar links -->
+        <ul class="nav-links">
+            <li onclick="window.location.href='dashboard.html'">Overview Dashboard</li>
+            <li onclick="window.location.href='raw_materials.html'">Raw Materials (Factory)</li>
+            <li class="active">Production Tracking</li>
+            <li onclick="window.location.href='inventory.html'">Finished Inventory</li>
+            <li onclick="window.location.href='pos.html'">POS & Sales Ledger</li>
+            <li onclick="window.location.href='audit.html'">Financials & Audit</li>
+            <li onclick="window.location.href='finance.html'">P&L & Compliance</li>
+        </ul>
+        <button class="logout-btn" id="logout-btn">Log Out</button>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <h1>Floor Tracking & Quality Control</h1>
+            <p id="user-email-display">Loading...</p>
+        </div>
+
+        <div class="tracking-grid">
+            <!-- Left Side: Quality Control & Wastage Form -->
+            <div class="card" style="border-top-color: #F59E0B;">
+                <h3>Log Wastage / Defects</h3>
+                
+                <label for="defect-type">Defect Category</label>
+                <select id="defect-type">
+                    <option value="Machine Jam (Paper Tear)">Machine Jam (Paper Tear)</option>
+                    <option value="Glue Failure">Glue Failure</option>
+                    <option value="Packaging Error">Packaging Error</option>
+                    <option value="Poor Cut Quality">Poor Cut Quality</option>
+                </select>
+
+                <label for="wasted-units">Estimated Units Lost</label>
+                <input type="number" id="wasted-units" placeholder="e.g., 5" min="1" required>
+
+                <label for="notes">Supervisor Notes</label>
+                <textarea id="notes" placeholder="Briefly describe the issue..."></textarea>
+
+                <button class="submit-btn" id="log-defect-btn">Log Defect</button>
+                <p id="status-msg"></p>
+            </div>
+
+            <!-- Right Side: Live Production Ledger -->
+            <div class="card">
+                <h3>Live Production Feed</h3>
+                <p style="color: #64748B; font-size: 0.85rem; margin-bottom: 15px;">Showing recent successful batches recorded from the Finished Inventory module.</p>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Product SKU</th>
+                            <th>Units Produced</th>
+                            <th>Logged By</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="production-table-body">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #94A3B8;">Loading live floor data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Your exact Firebase Keys
+        const firebaseConfig = {
+            apiKey: "AIzaSyCyM_luoUqilYNG-GPn7Gxb_Eo5ewVWB5Q",
+            authDomain: "rowena-pink-petals.firebaseapp.com",
+            projectId: "rowena-pink-petals",
+            storageBucket: "rowena-pink-petals.firebasestorage.app",
+            messagingSenderId: "925796017219",
+            appId: "1:925796017219:web:bf7eee185905b9c9ece0f6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUserEmail = "";
+
+        // Security Check
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                user.getIdTokenResult().then((idTokenResult) => {
+                    if (idTokenResult.claims.role === 'owner' || idTokenResult.claims.role === 'admin' || idTokenResult.claims.role === 'production') {
+                        document.getElementById('user-email-display').innerText = `Floor Manager: ${user.email}`;
+                        currentUserEmail = user.email;
+                        
+                        // Start the live table feed!
+                        listenToLiveProduction();
+                    } else {
+                        // FIX: Updated route
+                        signOut(auth).then(() => window.location.href = "index.html");
+                    }
+                });
+            } else {
+                // FIX: Updated route
+                window.location.href = "index.html";
+            }
+        });
+
+        // 1. Log Wastage Function
+        document.getElementById('log-defect-btn').addEventListener('click', async () => {
+            const type = document.getElementById('defect-type').value;
+            const units = document.getElementById('wasted-units').value;
+            const notes = document.getElementById('notes').value;
+            const statusMsg = document.getElementById('status-msg');
+
+            if (!units || units <= 0) {
+                statusMsg.style.color = "red";
+                statusMsg.innerText = "Please enter valid unit amount.";
+                return;
+            }
+
+            statusMsg.style.color = "#334155";
+            statusMsg.innerText = "Logging defect...";
+
+            try {
+                await addDoc(collection(db, "quality_control_logs"), {
+                    defect_type: type,
+                    units_lost: Number(units),
+                    supervisor_notes: notes,
+                    logged_by: currentUserEmail,
+                    timestamp: serverTimestamp()
+                });
+
+                statusMsg.style.color = "green";
+                statusMsg.innerText = "Defect logged successfully.";
+                document.getElementById('wasted-units').value = "";
+                document.getElementById('notes').value = "";
+                
+                setTimeout(() => { statusMsg.innerText = ""; }, 3000);
+
+            } catch (error) {
+                console.error("Error writing document: ", error);
+                statusMsg.style.color = "red";
+                statusMsg.innerText = "Error: Could not log defect.";
+            }
+        });
+
+        // 2. Real-time Production Table Listener
+        function listenToLiveProduction() {
+            // Get the last 10 successful production logs, ordered by newest first
+            const q = query(collection(db, "production_logs"), orderBy("timestamp", "desc"), limit(10));
+
+            onSnapshot(q, (snapshot) => {
+                const tableBody = document.getElementById('production-table-body');
+                tableBody.innerHTML = ""; // Clear the loading message
+
+                if (snapshot.empty) {
+                    tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94A3B8;">No recent production data found.</td></tr>`;
+                    return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    
+                    // Format the timestamp cleanly
+                    let timeString = "Just now";
+                    if (data.timestamp) {
+                        const dateObj = data.timestamp.toDate();
+                        timeString = dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    }
+
+                    // Extract username from email (e.g., admin@... becomes 'admin')
+                    const userShort = data.logged_by ? data.logged_by.split('@')[0] : "Unknown";
+
+                    // Build the table row
+                    const row = `
+                        <tr>
+                            <td style="font-weight: bold; color: #64748B;">${timeString}</td>
+                            <td>${data.product_sku}</td>
+                            <td style="font-weight: bold;">${data.units_added}</td>
+                            <td>${userShort}</td>
+                            <td><span class="badge">Verified</span></td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            });
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            // FIX: Updated route
+            signOut(auth).then(() => window.location.href = "index.html");
+        });
+    </script>
+</body>
+</html>

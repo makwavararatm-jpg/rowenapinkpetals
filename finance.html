@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rowena Pink Petals | Finance & Tax Compliance</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; }
+        body { display: flex; height: 100vh; background-color: #F4F6F8; }
+        
+        /* Sidebar Styles */
+        .sidebar { width: 250px; background-color: #1E293B; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { padding: 20px; background-color: #0F172A; text-align: center; border-bottom: 2px solid #D81B60; }
+        .sidebar-header h2 { font-size: 1.2rem; color: #D81B60; }
+        .sidebar-header p { font-size: 0.8rem; color: #94A3B8; }
+        .nav-links { list-style: none; padding: 20px 0; flex-grow: 1; }
+        .nav-links li { padding: 15px 25px; cursor: pointer; transition: 0.3s; color: #CBD5E1; }
+        .nav-links li:hover, .nav-links li.active { background-color: #334155; color: white; border-left: 4px solid #D81B60; }
+        .logout-btn { background-color: #D81B60; color: white; border: none; padding: 15px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .logout-btn:hover { background-color: #AD1457; }
+
+        /* Main Content Styles */
+        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 10px; border-bottom: 1px solid #E2E8F0; }
+        
+        /* Filter Controls */
+        .filter-bar { background: white; padding: 20px; border-radius: 12px; margin-bottom: 30px; display: flex; gap: 20px; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-left: 5px solid #3B82F6; }
+        .filter-group { display: flex; flex-direction: column; }
+        .filter-group label { font-size: 0.85rem; color: #64748B; margin-bottom: 5px; font-weight: bold; }
+        .filter-group input { padding: 10px; border: 1px solid #CBD5E1; border-radius: 6px; }
+        .generate-btn { padding: 10px 20px; background-color: #3B82F6; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; align-self: flex-end; height: 40px; transition: 0.3s; }
+        .generate-btn:hover { background-color: #2563EB; }
+        .csv-btn { background-color: #10B981; margin-left: auto; }
+        .csv-btn:hover { background-color: #059669; }
+
+        /* Grid Layout */
+        .finance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start; }
+        
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid #10B981; }
+        .card.pink-border { border-top-color: #D81B60; }
+        .card.tax-border { border-top-color: #3B82F6; grid-column: span 2; }
+        .card h3 { color: #334155; margin-bottom: 20px; }
+        
+        /* Form Elements */
+        label { display: block; margin-bottom: 8px; color: #64748B; font-weight: bold; font-size: 0.9rem; }
+        select, input.form-input { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 1rem; }
+        
+        .submit-btn { width: 100%; padding: 15px; background-color: #D81B60; color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; }
+        #status-msg { margin-top: 15px; font-weight: bold; text-align: center; font-size: 0.9rem; }
+
+        /* P&L and Tax Statement Styles */
+        .pl-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #E2E8F0; font-size: 1.05rem; color: #475569; }
+        .pl-row.subtotal { font-weight: bold; border-bottom: 2px solid #CBD5E1; color: #334155; margin-top: 10px; }
+        .pl-row.net-profit { font-weight: bold; font-size: 1.4rem; color: #10B981; border-bottom: none; margin-top: 15px; padding-top: 15px; border-top: 3px double #10B981; }
+        .amount { font-family: monospace; font-size: 1.1rem; }
+        
+        .tax-alert { background: #EFF6FF; border: 1px solid #BFDBFE; padding: 15px; border-radius: 8px; color: #1E3A8A; font-size: 0.9rem; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>RPP MIS</h2>
+            <p>Godview Active</p>
+        </div>
+        <ul class="nav-links">
+            <li onclick="window.location.href='dashboard.html'">Overview Dashboard</li>
+            <li onclick="window.location.href='raw_materials.html'">Raw Materials (Factory)</li>
+            <li onclick="window.location.href='production_tracking.html'">Production Tracking</li>
+            <li onclick="window.location.href='inventory.html'">Finished Inventory</li>
+            <li onclick="window.location.href='pos.html'">POS & Sales Ledger</li>
+            <li onclick="window.location.href='audit.html'">Financials & Audit</li>
+            <li class="active">P&L & Compliance</li>
+        </ul>
+        <button class="logout-btn" id="logout-btn">Log Out</button>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <h1>Finance & Compliance</h1>
+            <p id="user-email-display">Loading...</p>
+        </div>
+
+        <!-- Date Filter for TaRMS Reporting -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label for="start-date">Report Start Date</label>
+                <input type="date" id="start-date">
+            </div>
+            <div class="filter-group">
+                <label for="end-date">Report End Date</label>
+                <input type="date" id="end-date">
+            </div>
+            <button class="generate-btn" id="generate-report-btn">Generate Financial Report</button>
+            <button class="generate-btn csv-btn" id="export-csv-btn">Export to CSV</button>
+        </div>
+
+        <div class="finance-grid">
+            <!-- Left Side: Expense Logger -->
+            <div class="card pink-border">
+                <h3>Log Operating Expense (OpEx)</h3>
+                
+                <label for="expense-category">Expense Category</label>
+                <select id="expense-category">
+                    <option value="Electricity / Utilities">Electricity / Utilities</option>
+                    <option value="Transport / Logistics">Transport / Logistics</option>
+                    <option value="Payroll / Wages">Payroll / Wages</option>
+                    <option value="Rent">Facility Rent</option>
+                    <option value="Other">Other Admin Expenses</option>
+                </select>
+
+                <label for="expense-amount">Amount (USD)</label>
+                <input type="number" class="form-input" id="expense-amount" placeholder="e.g., 150.00" step="0.01" min="0">
+
+                <label for="expense-notes">Description / Reference</label>
+                <input type="text" class="form-input" id="expense-notes" placeholder="e.g., ZESA Token, Fuel...">
+
+                <button class="submit-btn" id="log-expense-btn">Record Expense</button>
+                <p id="status-msg"></p>
+            </div>
+
+            <!-- Right Side: Automated P&L Statement -->
+            <div class="card">
+                <h3 id="report-title">Profit & Loss (All Time)</h3>
+                
+                <div class="pl-row">
+                    <span>Total Sales Revenue</span>
+                    <span class="amount" style="color: #10B981;" id="pl-revenue">$0.00</span>
+                </div>
+                <div class="pl-row">
+                    <span>Cost of Goods Sold</span>
+                    <span class="amount" style="color: #D81B60;" id="pl-cogs">-$0.00</span>
+                </div>
+                <div class="pl-row subtotal">
+                    <span>Gross Profit</span>
+                    <span class="amount" id="pl-gross">$0.00</span>
+                </div>
+                
+                <div style="margin-top: 20px;"></div>
+
+                <div class="pl-row">
+                    <span>Operating Expenses (OpEx)</span>
+                    <span class="amount" style="color: #D81B60;" id="pl-opex">-$0.00</span>
+                </div>
+                
+                <div class="pl-row net-profit" id="pl-net-container">
+                    <span>Net Taxable Income</span>
+                    <span class="amount" id="pl-net">$0.00</span>
+                </div>
+            </div>
+
+            <!-- Bottom: TaRMS Tax Compliance Summary -->
+            <div class="card tax-border">
+                <h3>Regulatory & Tax Compliance</h3>
+                <div class="tax-alert">
+                    <strong>TaRMS Advisory:</strong> The figures below represent an estimate based on recorded operational data for the selected period. Ensure all zero-rated or exempt transactions are verified before final portal submission.
+                </div>
+                
+                <div class="finance-grid" style="grid-template-columns: 1fr 1fr; gap: 20px; box-shadow: none; border: none; padding: 0;">
+                    <div>
+                        <div class="pl-row">
+                            <span>Total Declared Revenue</span>
+                            <span class="amount" id="tax-revenue">$0.00</span>
+                        </div>
+                        <div class="pl-row">
+                            <span>Estimated Output VAT (15%)</span>
+                            <span class="amount" style="color: #D81B60;" id="tax-vat-payable">$0.00</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="pl-row">
+                            <span>Total Deductible Expenses</span>
+                            <span class="amount" id="tax-deductibles">$0.00</span>
+                        </div>
+                        <div class="pl-row">
+                            <span style="font-size: 0.85rem; color: #64748B;">*Ready for ITF263 Assessment calculations.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCyM_luoUqilYNG-GPn7Gxb_Eo5ewVWB5Q",
+            authDomain: "rowena-pink-petals.firebaseapp.com",
+            projectId: "rowena-pink-petals",
+            storageBucket: "rowena-pink-petals.firebasestorage.app",
+            messagingSenderId: "925796017219",
+            appId: "1:925796017219:web:bf7eee185905b9c9ece0f6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUserEmail = "";
+        let currentReportData = {}; // Stores data for CSV export
+
+        // Establish Default Dates (Current Month)
+        const today = new Date();
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        document.getElementById('start-date').value = firstDay.toISOString().split('T')[0];
+        document.getElementById('end-date').value = today.toISOString().split('T')[0];
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                user.getIdTokenResult().then((idTokenResult) => {
+                    if (idTokenResult.claims.role === 'owner' || idTokenResult.claims.role === 'admin') {
+                        document.getElementById('user-email-display').innerText = `Finance Admin: ${user.email}`;
+                        currentUserEmail = user.email;
+                        generateReport(); // Generate initial report
+                    } else {
+                        // FIX: Updated routing from admin.html to index.html
+                        signOut(auth).then(() => window.location.href = "index.html");
+                    }
+                });
+            } else {
+                // FIX: Updated routing from admin.html to index.html
+                window.location.href = "index.html";
+            }
+        });
+
+        // Generate Report Based on Date Range
+        async function generateReport() {
+            const startDateStr = document.getElementById('start-date').value;
+            const endDateStr = document.getElementById('end-date').value;
+            
+            if(!startDateStr || !endDateStr) return;
+
+            // Convert to Firebase Timestamps
+            const startDate = new Date(startDateStr);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(endDateStr);
+            endDate.setHours(23, 59, 59, 999);
+
+            document.getElementById('report-title').innerText = `Profit & Loss (${startDateStr} to ${endDateStr})`;
+
+            try {
+                let totalRevenue = 0, totalCOGS = 0, totalOpEx = 0;
+
+                // Query Sales with Date Filters
+                const salesQ = query(collection(db, "sales_ledger"), where("timestamp", ">=", startDate), where("timestamp", "<=", endDate));
+                const salesSnapshot = await getDocs(salesQ);
+                salesSnapshot.forEach(doc => { totalRevenue += doc.data().total_revenue || 0; });
+
+                // Query Raw Materials with Date Filters
+                const cogsQ = query(collection(db, "raw_materials_logs"), where("timestamp", ">=", startDate), where("timestamp", "<=", endDate));
+                const cogsSnapshot = await getDocs(cogsQ);
+                cogsSnapshot.forEach(doc => { totalCOGS += doc.data().total_cost_usd || 0; });
+
+                // Query OpEx with Date Filters
+                const opexQ = query(collection(db, "operating_expenses"), where("timestamp", ">=", startDate), where("timestamp", "<=", endDate));
+                const opexSnapshot = await getDocs(opexQ);
+                opexSnapshot.forEach(doc => { totalOpEx += doc.data().amount || 0; });
+
+                // Crunch Numbers
+                const grossProfit = totalRevenue - totalCOGS;
+                const netProfit = grossProfit - totalOpEx;
+                const estimatedOutputVAT = totalRevenue * 0.15; // Standard 15% calculation
+                const totalDeductibles = totalCOGS + totalOpEx;
+
+                // Store for CSV Export
+                currentReportData = {
+                    startDate: startDateStr,
+                    endDate: endDateStr,
+                    totalRevenue,
+                    totalCOGS,
+                    grossProfit,
+                    totalOpEx,
+                    netProfit,
+                    estimatedOutputVAT,
+                    totalDeductibles
+                };
+
+                // Update P&L UI
+                document.getElementById('pl-revenue').innerText = `$${totalRevenue.toFixed(2)}`;
+                document.getElementById('pl-cogs').innerText = `-$${totalCOGS.toFixed(2)}`;
+                document.getElementById('pl-gross').innerText = `$${grossProfit.toFixed(2)}`;
+                document.getElementById('pl-opex').innerText = `-$${totalOpEx.toFixed(2)}`;
+                document.getElementById('pl-net').innerText = `$${netProfit.toFixed(2)}`;
+                
+                // Update Tax UI
+                document.getElementById('tax-revenue').innerText = `$${totalRevenue.toFixed(2)}`;
+                document.getElementById('tax-vat-payable').innerText = `$${estimatedOutputVAT.toFixed(2)}`;
+                document.getElementById('tax-deductibles').innerText = `$${totalDeductibles.toFixed(2)}`;
+
+            } catch (error) {
+                console.error("Error generating report:", error);
+            }
+        }
+
+        // CSV Export Logic
+        function exportToCSV() {
+            const data = currentReportData;
+            if (!data.startDate) {
+                alert("Please generate a report first.");
+                return;
+            }
+
+            const csvContent = "data:text/csv;charset=utf-8,"
+                + "Metric,Amount (USD)\n"
+                + `Report Period,${data.startDate} to ${data.endDate}\n`
+                + `Total Sales Revenue,${data.totalRevenue.toFixed(2)}\n`
+                + `Cost of Goods Sold (COGS),-${data.totalCOGS.toFixed(2)}\n`
+                + `Gross Profit,${data.grossProfit.toFixed(2)}\n`
+                + `Operating Expenses (OpEx),-${data.totalOpEx.toFixed(2)}\n`
+                + `Net Taxable Income,${data.netProfit.toFixed(2)}\n`
+                + `Estimated Output VAT (15%),${data.estimatedOutputVAT.toFixed(2)}\n`
+                + `Total Deductible Expenses,${data.totalDeductibles.toFixed(2)}\n`;
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `RPP_Financial_Report_${data.startDate}_to_${data.endDate}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Action Listeners
+        document.getElementById('generate-report-btn').addEventListener('click', generateReport);
+        document.getElementById('export-csv-btn').addEventListener('click', exportToCSV);
+
+        // Expense Logger
+        document.getElementById('log-expense-btn').addEventListener('click', async () => {
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+            if (!amount) return;
+
+            await addDoc(collection(db, "operating_expenses"), {
+                category: document.getElementById('expense-category').value,
+                amount: amount,
+                description: document.getElementById('expense-notes').value,
+                logged_by: currentUserEmail,
+                timestamp: serverTimestamp()
+            });
+
+            document.getElementById('expense-amount').value = "";
+            document.getElementById('expense-notes').value = "";
+            generateReport(); // Instantly update P&L
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            // FIX: Updated routing from admin.html to index.html
+            signOut(auth).then(() => window.location.href = "index.html");
+        });
+    </script>
+</body>
+</html>

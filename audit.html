@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rowena Pink Petals | Financial Audit Ledger</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; }
+        body { display: flex; height: 100vh; background-color: #F4F6F8; }
+        
+        /* Sidebar Styles */
+        .sidebar { width: 250px; background-color: #1E293B; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { padding: 20px; background-color: #0F172A; text-align: center; border-bottom: 2px solid #D81B60; }
+        .sidebar-header h2 { font-size: 1.2rem; color: #D81B60; }
+        .sidebar-header p { font-size: 0.8rem; color: #94A3B8; }
+        .nav-links { list-style: none; padding: 20px 0; flex-grow: 1; }
+        .nav-links li { padding: 15px 25px; cursor: pointer; transition: 0.3s; color: #CBD5E1; }
+        .nav-links li:hover, .nav-links li.active { background-color: #334155; color: white; border-left: 4px solid #D81B60; }
+        .logout-btn { background-color: #D81B60; color: white; border: none; padding: 15px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .logout-btn:hover { background-color: #AD1457; }
+
+        /* Main Content Styles */
+        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 10px; border-bottom: 1px solid #E2E8F0; }
+        
+        /* Ledger Card Styles */
+        .ledger-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid #1E293B; }
+        .ledger-card h3 { color: #334155; margin-bottom: 5px; }
+        .ledger-card p.subtitle { color: #64748B; font-size: 0.9rem; margin-bottom: 20px; }
+        
+        /* Table Styles */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #E2E8F0; }
+        th { background-color: #F8FAFC; color: #475569; font-weight: bold; font-size: 0.9rem; letter-spacing: 0.5px; }
+        td { color: #334155; font-size: 0.95rem; }
+        tr:hover td { background-color: #F1F5F9; }
+        
+        /* Financial Indicators */
+        .credit { color: #10B981; font-weight: bold; }
+        .debit { color: #D81B60; font-weight: bold; }
+        .badge-pos { background-color: #D1FAE5; color: #059669; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        .badge-factory { background-color: #FCE4EC; color: #D81B60; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        .badge-opex { background-color: #EFF6FF; color: #2563EB; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>RPP MIS</h2>
+            <p>Godview Active</p>
+        </div>
+        <ul class="nav-links">
+            <li onclick="window.location.href='dashboard.html'">Overview Dashboard</li>
+            <li onclick="window.location.href='raw_materials.html'">Raw Materials (Factory)</li>
+            <li onclick="window.location.href='production_tracking.html'">Production Tracking</li>
+            <li onclick="window.location.href='inventory.html'">Finished Inventory</li>
+            <li onclick="window.location.href='pos.html'">POS & Sales Ledger</li>
+            <li class="active">Financials & Audit</li>
+            <li onclick="window.location.href='finance.html'">P&L & Compliance</li>
+        </ul>
+        <button class="logout-btn" id="logout-btn">Log Out</button>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <h1>Master Financial Ledger</h1>
+            <p id="user-email-display">Loading...</p>
+        </div>
+
+        <div class="ledger-card">
+            <h3>Chronological Audit Trail</h3>
+            <p class="subtitle">Live, immutable feed of all financial movements across Retail, Factory, and Operations.</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Department</th>
+                        <th>Description</th>
+                        <th>Employee ID</th>
+                        <th style="text-align: right;">Amount (USD)</th>
+                    </tr>
+                </thead>
+                <tbody id="audit-table-body">
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #94A3B8;">Decrypting master ledger...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCyM_luoUqilYNG-GPn7Gxb_Eo5ewVWB5Q",
+            authDomain: "rowena-pink-petals.firebaseapp.com",
+            projectId: "rowena-pink-petals",
+            storageBucket: "rowena-pink-petals.firebasestorage.app",
+            messagingSenderId: "925796017219",
+            appId: "1:925796017219:web:bf7eee185905b9c9ece0f6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                user.getIdTokenResult().then((idTokenResult) => {
+                    if (idTokenResult.claims.role === 'owner' || idTokenResult.claims.role === 'admin') {
+                        document.getElementById('user-email-display').innerText = `Executive View: ${user.email}`;
+                        loadMasterLedger();
+                    } else {
+                        alert("SECURITY BREACH: You do not have clearance for the Master Ledger.");
+                        signOut(auth).then(() => window.location.href = "admin.html");
+                    }
+                });
+            } else {
+                window.location.href = "admin.html";
+            }
+        });
+
+        async function loadMasterLedger() {
+            const tableBody = document.getElementById('audit-table-body');
+            let allTransactions = [];
+
+            try {
+                // 1. Fetch recent Sales (Income)
+                const salesQ = query(collection(db, "sales_ledger"), orderBy("timestamp", "desc"), limit(25));
+                const salesSnapshot = await getDocs(salesQ);
+                salesSnapshot.forEach(doc => {
+                    let data = doc.data();
+                    allTransactions.push({
+                        type: 'sale',
+                        timestamp: data.timestamp ? data.timestamp.toDate() : new Date(),
+                        description: `Sale: ${data.quantity_sold}x ${data.product_sku}`,
+                        user: data.cashier_email,
+                        amount: data.total_revenue
+                    });
+                });
+
+                // 2. Fetch recent Raw Material Purchases (COGS Expense)
+                const COGSExpensesQ = query(collection(db, "raw_materials_logs"), orderBy("timestamp", "desc"), limit(25));
+                const expensesSnapshot = await getDocs(COGSExpensesQ);
+                expensesSnapshot.forEach(doc => {
+                    let data = doc.data();
+                    allTransactions.push({
+                        type: 'expense_cogs',
+                        timestamp: data.timestamp ? data.timestamp.toDate() : new Date(),
+                        description: `Purchase: ${data.quantity_received} ${data.unit_of_measure} ${data.material_type} (${data.supplier_name})`,
+                        user: data.logged_by,
+                        amount: data.total_cost_usd
+                    });
+                });
+
+                // 3. Fetch recent Operating Expenses (OpEx)
+                const opExQ = query(collection(db, "operating_expenses"), orderBy("timestamp", "desc"), limit(25));
+                const opExSnapshot = await getDocs(opExQ);
+                opExSnapshot.forEach(doc => {
+                    let data = doc.data();
+                    allTransactions.push({
+                        type: 'expense_opex',
+                        timestamp: data.timestamp ? data.timestamp.toDate() : new Date(),
+                        description: `OpEx [${data.category}]: ${data.description || 'No description'}`,
+                        user: data.logged_by,
+                        amount: data.amount
+                    });
+                });
+
+                // 4. Sort everything chronologically (newest first)
+                allTransactions.sort((a, b) => b.timestamp - a.timestamp);
+
+                tableBody.innerHTML = ""; // Clear loader
+
+                if (allTransactions.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94A3B8;">No financial records found.</td></tr>`;
+                    return;
+                }
+
+                allTransactions.forEach(tx => {
+                    const dateStr = tx.timestamp.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    
+                    let amountClass = 'debit';
+                    let amountPrefix = '-';
+                    let badgeClass = 'badge-factory';
+                    let deptName = 'Factory';
+
+                    if (tx.type === 'sale') {
+                        amountClass = 'credit';
+                        amountPrefix = '+';
+                        badgeClass = 'badge-pos';
+                        deptName = 'Retail POS';
+                    } else if (tx.type === 'expense_opex') {
+                        badgeClass = 'badge-opex';
+                        deptName = 'Operations';
+                    }
+
+                    const userShort = tx.user ? tx.user.split('@')[0] : 'Unknown';
+
+                    const row = `
+                        <tr>
+                            <td style="color: #64748B;">${dateStr}</td>
+                            <td><span class="${badgeClass}">${deptName}</span></td>
+                            <td>${tx.description}</td>
+                            <td>${userShort}</td>
+                            <td class="${amountClass}" style="text-align: right;">${amountPrefix} $${tx.amount.toFixed(2)}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+
+            } catch (error) {
+                console.error("Error loading ledger:", error);
+                tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">Failed to load financial data.</td></tr>`;
+            }
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            signOut(auth).then(() => window.location.href = "admin.html");
+        });
+    </script>
+</body>
+</html>

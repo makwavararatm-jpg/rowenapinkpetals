@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rowena Pink Petals | MIS Portal</title>
+    <style>
+        /* Base styles for a clean, professional login box */
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: #ECEFF1; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-card h2 { color: #D81B60; margin-bottom: 5px; }
+        .login-card p { color: #666; margin-bottom: 25px; font-size: 0.9rem; }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #D81B60;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover { background-color: #AD1457; }
+        
+        #status-message {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <h2>MIS Portal</h2>
+        <p>Authorized Personnel Only</p>
+
+        <input type="email" id="email" placeholder="Email Address" required>
+        <input type="password" id="password" placeholder="Password" required>
+        
+        <button id="login-btn">Secure Login</button>
+        
+        <p id="status-message"></p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCyM_luoUqilYNG-GPn7Gxb_Eo5ewVWB5Q",
+            authDomain: "rowena-pink-petals.firebaseapp.com",
+            projectId: "rowena-pink-petals",
+            storageBucket: "rowena-pink-petals.firebasestorage.app",
+            messagingSenderId: "925796017219",
+            appId: "1:925796017219:web:bf7eee185905b9c9ece0f6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        document.getElementById('login-btn').addEventListener('click', () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const status = document.getElementById('status-message');
+
+            status.style.color = "#333";
+            status.innerText = "Authenticating & Verifying Clearance...";
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    return userCredential.user.getIdTokenResult();
+                })
+                .then((idTokenResult) => {
+                    const userRole = idTokenResult.claims.role;
+
+                    // SMART ROUTING LOGIC
+                    if (userRole === 'owner' || userRole === 'admin') {
+                        status.style.color = "green";
+                        status.innerText = "Godview Verified. Routing to Dashboard...";
+                        window.location.href = "dashboard.html"; 
+                    } 
+                    else if (userRole === 'production') {
+                        status.style.color = "green";
+                        status.innerText = "Clearance: Factory. Routing to Floor Tracking...";
+                        window.location.href = "production_tracking.html"; 
+                    } 
+                    else if (userRole === 'cashier') {
+                        status.style.color = "green";
+                        status.innerText = "Clearance: Retail. Routing to POS...";
+                        window.location.href = "pos.html"; 
+                    } 
+                    else {
+                        status.style.color = "red";
+                        status.innerText = "Access Denied: Unrecognized security clearance.";
+                        signOut(auth);
+                    }
+                })
+                .catch((error) => {
+                    status.style.color = "red";
+                    status.innerText = "Error: Invalid credentials or network failure.";
+                });
+        });
+    </script>
+</body>
+</html>

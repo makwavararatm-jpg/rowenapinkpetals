@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rowena Pink Petals | Raw Materials Intake</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; }
+        body { display: flex; height: 100vh; background-color: #F4F6F8; }
+        
+        /* Sidebar Styles */
+        .sidebar { width: 250px; background-color: #1E293B; color: white; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 20px; background-color: #0F172A; text-align: center; border-bottom: 2px solid #D81B60; }
+        .sidebar-header h2 { font-size: 1.2rem; color: #D81B60; }
+        .sidebar-header p { font-size: 0.8rem; color: #94A3B8; }
+        .nav-links { list-style: none; padding: 20px 0; flex-grow: 1; }
+        .nav-links li { padding: 15px 25px; cursor: pointer; transition: 0.3s; color: #CBD5E1; }
+        .nav-links li:hover, .nav-links li.active { background-color: #334155; color: white; border-left: 4px solid #D81B60; }
+        .logout-btn { background-color: #D81B60; color: white; border: none; padding: 15px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .logout-btn:hover { background-color: #AD1457; }
+
+        /* Main Content Styles */
+        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 10px; border-bottom: 1px solid #E2E8F0; }
+        
+        /* Data Entry Form Styles */
+        .form-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            max-width: 500px;
+            border-top: 5px solid #D81B60;
+        }
+        .form-card h3 { color: #334155; margin-bottom: 20px; }
+        
+        label { display: block; margin-bottom: 8px; color: #64748B; font-weight: bold; font-size: 0.9rem; }
+        select, input {
+            width: 100%; padding: 12px; margin-bottom: 20px;
+            border: 1px solid #CBD5E1; border-radius: 6px; font-size: 1rem;
+        }
+        select:focus, input:focus { outline: none; border-color: #D81B60; }
+
+        .input-row { display: flex; gap: 15px; }
+        .input-row div { flex: 1; }
+        
+        .submit-btn {
+            width: 100%; padding: 15px; background-color: #D81B60;
+            color: white; border: none; border-radius: 6px; font-size: 1rem;
+            font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .submit-btn:hover { background-color: #AD1457; }
+        
+        #status-msg { margin-top: 15px; font-weight: bold; text-align: center; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>RPP MIS</h2>
+            <p>Godview Active</p>
+        </div>
+        <ul class="nav-links">
+            <li onclick="window.location.href='dashboard.html'">Overview Dashboard</li>
+            <li class="active">Raw Materials (Factory)</li>
+            <li onclick="window.location.href='production_tracking.html'">Production Tracking</li>
+            <li onclick="window.location.href='inventory.html'">Finished Inventory</li>
+            <li onclick="window.location.href='pos.html'">POS & Sales Ledger</li>
+            <li onclick="window.location.href='audit.html'">Financials & Audit</li>
+            <li onclick="window.location.href='finance.html'">P&L & Compliance</li>
+        </ul>
+        <button class="logout-btn" id="logout-btn">Log Out</button>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <h1>Factory Intake</h1>
+            <p id="user-email-display">Loading...</p>
+        </div>
+
+        <div class="form-card">
+            <h3>Log Raw Material Delivery</h3>
+            
+            <label for="material-type">Material Type</label>
+            <select id="material-type">
+                <option value="Jumbo Roll (Tissue)">Jumbo Roll (Tissue)</option>
+                <option value="Core Boards">Core Boards</option>
+                <option value="Laminating Glue">Laminating Glue</option>
+                <option value="Plastic Wrapping">Plastic Wrapping</option>
+            </select>
+
+            <label for="supplier">Supplier Name</label>
+            <input type="text" id="supplier" placeholder="e.g., Alpha Paper Mills" required>
+
+            <div class="input-row">
+                <div>
+                    <label for="quantity">Quantity</label>
+                    <input type="number" id="quantity" placeholder="e.g., 500" min="1" required>
+                </div>
+                <div>
+                    <label for="unit">Unit of Measure</label>
+                    <select id="unit">
+                        <option value="kg">Kilograms (kg)</option>
+                        <option value="tons">Tons</option>
+                        <option value="units">Individual Units</option>
+                    </select>
+                </div>
+            </div>
+
+            <label for="total-cost">Total Invoice Cost ($)</label>
+            <input type="number" id="total-cost" placeholder="e.g., 1200.00" step="0.01" min="0" required>
+
+            <button class="submit-btn" id="log-material-btn">Log Delivery</button>
+            <p id="status-msg"></p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCyM_luoUqilYNG-GPn7Gxb_Eo5ewVWB5Q",
+            authDomain: "rowena-pink-petals.firebaseapp.com",
+            projectId: "rowena-pink-petals",
+            storageBucket: "rowena-pink-petals.firebasestorage.app",
+            messagingSenderId: "925796017219",
+            appId: "1:925796017219:web:bf7eee185905b9c9ece0f6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app); 
+
+        let currentUserEmail = "";
+
+        // Security Check
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                user.getIdTokenResult().then((idTokenResult) => {
+                    if (idTokenResult.claims.role === 'owner' || idTokenResult.claims.role === 'admin' || idTokenResult.claims.role === 'production') {
+                        document.getElementById('user-email-display').innerText = `Logged in as: ${user.email}`;
+                        currentUserEmail = user.email;
+                    } else {
+                        signOut(auth).then(() => window.location.href = "index.html");
+                    }
+                });
+            } else {
+                window.location.href = "index.html";
+            }
+        });
+
+        // Write to Database Function
+        document.getElementById('log-material-btn').addEventListener('click', async () => {
+            const material = document.getElementById('material-type').value;
+            const supplier = document.getElementById('supplier').value;
+            const quantity = document.getElementById('quantity').value;
+            const unit = document.getElementById('unit').value;
+            const cost = document.getElementById('total-cost').value;
+            const statusMsg = document.getElementById('status-msg');
+
+            if (!quantity || !cost || !supplier) {
+                statusMsg.style.color = "red";
+                statusMsg.innerText = "Please fill out all fields.";
+                return;
+            }
+
+            statusMsg.style.color = "#334155";
+            statusMsg.innerText = "Saving to secure ledger...";
+
+            try {
+                await addDoc(collection(db, "raw_materials_logs"), {
+                    material_type: material,
+                    supplier_name: supplier,
+                    quantity_received: Number(quantity),
+                    unit_of_measure: unit,
+                    total_cost_usd: Number(cost),
+                    logged_by: currentUserEmail,
+                    timestamp: serverTimestamp()
+                });
+
+                statusMsg.style.color = "green";
+                statusMsg.innerText = "Success! Material intake recorded.";
+                
+                document.getElementById('supplier').value = "";
+                document.getElementById('quantity').value = "";
+                document.getElementById('total-cost').value = "";
+
+            } catch (error) {
+                console.error("Error writing document: ", error);
+                statusMsg.style.color = "red";
+                statusMsg.innerText = "Error: Could not save to database. Check permissions.";
+            }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            signOut(auth).then(() => window.location.href = "index.html");
+        });
+    </script>
+</body>
+</html>
